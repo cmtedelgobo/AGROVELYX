@@ -1,3 +1,4 @@
+import {handleV231} from './v231.js';
 import {handleV23} from './v23.js';
 const encoder=new TextEncoder();
 const JSON_HEADERS={'content-type':'application/json; charset=utf-8','cache-control':'no-store','x-content-type-options':'nosniff'};
@@ -38,4 +39,4 @@ if(!await verifyPassword(old,current.password_hash))return err('Senha atual inv�
 await env.DB.prepare('UPDATE app_users SET password_hash=? WHERE id=?').bind(await passwordHash(next),u.user_id).run();
 await env.DB.prepare('UPDATE auth_sessions SET revoked_at=CURRENT_TIMESTAMP WHERE user_id=? AND id<>?').bind(u.user_id,u.session_id).run();
 return response({ok:true});
-}if(url.pathname==='/api/users')return usersEndpoint(req,env.DB,u,url);if(url.pathname==='/api/permissions'&&req.method==='POST')return permissionsEndpoint(req,env.DB,u);if(url.pathname.startsWith('/api/v23/'))return handleV23(req,env.DB,u,url);if(url.pathname==='/api/records')return recordsEndpoint(req,env.DB,u,url);return err('Endpoint não encontrado.',404);}catch(e){return err('Falha ao processar requisição.',500);}}};
+}if(url.pathname==='/api/users')return usersEndpoint(req,env.DB,u,url);if(url.pathname==='/api/permissions'&&req.method==='POST')return permissionsEndpoint(req,env.DB,u);if(url.pathname.startsWith('/api/v231/'))return handleV231(req,env.DB,u,url);if(url.pathname.startsWith('/api/v23/'))return handleV23(req,env.DB,u,url);if(url.pathname==='/api/records')return recordsEndpoint(req,env.DB,u,url);return err('Endpoint não encontrado.',404);}catch(e){return err('Falha ao processar requisição.',500);}}};
