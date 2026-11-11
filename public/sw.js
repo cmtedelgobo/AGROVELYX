@@ -1,5 +1,5 @@
 /* Cache somente do aplicativo estático; nenhum dado sensível é transmitido. */
-const CACHE='agrovelyx-v2-ui-21';
+const CACHE='agrovelyx-v2-ui-211';
 const CORE=['./','./index.html','./styles.css','./app.js','./agrovelyx-brand-login.png','./stratechne-st.png','./login-pig-background.png'];
 self.addEventListener('install',e=>e.waitUntil(caches.open(CACHE).then(c=>c.addAll(CORE)).then(()=>self.skipWaiting())));
 self.addEventListener('activate',e=>e.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(k=>k!==CACHE).map(k=>caches.delete(k)))).then(()=>self.clients.claim())));
