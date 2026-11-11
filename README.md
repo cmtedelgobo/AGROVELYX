@@ -1,36 +1,45 @@
-# AGROVELYX SUÍNOS 2.0 — PRÉVIA FUNCIONAL LOCAL
+# AGROVELYX SUÍNOS 2.0 — autenticação e separação de granjas
 
-## Estado real do projeto
+## Visão geral
 
-Esta versão evolui a navegação Beta 0.1 para um **protótipo interativo de testes**, sem backend. Mantém a estrutura visual azul da Stratéchne e incorpora a marca Agrovelyx Suínos fornecida pelo proprietário.
+Primeira integração de autenticação e D1. Interface original preservada, incluindo menus responsivos e formulários que **não fecham ao clicar fora**.
 
-**NÃO É UM ERP PRONTO PARA USO EM GRANJA REAL.** Não use informações pessoais de funcionários, dados clínicos, financeiros ou de operação real nesta edição. O servidor, autenticação por usuário, papéis, dados por granja e banco Cloudflare D1 **ainda não estão implementados**.
+### Implementado
+- Login via Worker, cookie `HttpOnly`, `Secure`, `SameSite=Strict`, duração de 12 horas.
+- Senhas com PBKDF2/SHA-256, sal individual e 210.000 iterações.
+- Sessão vinculada à organização e granja, validada em cada chamada.
+- Usuários master/administradores podem cadastrar usuários e conceder permissões de leitura/edição.
+- Registros genéricos de formulários da interface são persistidos por granja no D1 (`erp_records`).
+- Auditoria de inclusão/alteração no D1. Bloqueio de login após tentativas repetidas.
+- Endpoint de troca de senha; outros dispositivos são desconectados após alteração.
 
-## O que funciona no navegador
+### Não concluído — NÃO usar como ERP definitivo para operação real
+- Os lançamentos continuam em formulários genéricos, não nas tabelas zootécnicas normalizadas criadas nos blocos 1-14.
+- Não há sincronização offline segura, integração com ração, financeiro, prontuário e demais tabelas de domínio.
+- A proteção contra dupla identificação e validação de todos os vínculos ainda exige regras adicionais.
+- Criação de usuários no painel funciona; remoção/edição de usuários e leitura do estado de permissões ainda precisam de interface.
+- A configuração de fases não é salva remotamente e está desabilitada nesta etapa.
+- Rascunhos em andamento ficam apenas na memória da página; não navegue ou recarregue durante preenchimento.
+- Não usar o login demonstrativo fraco em serviço público sem trocar a senha.
 
-- Menu lateral com ícones SVG, layout adaptativo para celular e atalhos personalizáveis.
-- Botão **Ocultar/Exibir painel de ação** nas telas.
-- Telas de cadastros e lançamentos locais dos módulos, com criação, pesquisa, edição e exportação CSV.
-- Modal de formulário **não fecha ao clicar fora**, nem ao pressionar Escape; preenchimento gera rascunho local. Ao sair, o rascunho pode ser retomado.
-- **Salvar dados offline** consolida um lançamento no armazenamento local; indicador online/offline e serviço de cache estático para abertura da aplicação após visita prévia (sob HTTPS).
-- Fila de lançamentos locais e **Central de Sincronização** com exportação/importação de backup JSON. A fila NÃO pode ser enviada, pois não existe API de sincronização autenticada neste ZIP.
-- Cadastro animal com brinco, mossa e tatuagem independentes, aviso sobre duplicidade entre animais ativos e histórico das edições.
-- **PIA** com identificações, genética informada e seções de consumo, vacinas, tratamento, partos e movimentações; os vínculos desta prévia usam identificações digitadas, NÃO relações referencialmente seguras entre entidades.
-- Cadastro de colaboradores, cargos, setores e organograma em níveis, com relações acima/abaixo/paralelo (visualização experimental).
-- Configurações por fase de produção e painel simplificado de galpões/baias.
-- Registro local de auditoria da edição e criação (sem identidade autenticada), impressão do PIA via navegador.
+## Passos de implantação (na ordem)
 
-## O que falta antes de considerar produção
+1. Faça backup do D1, se houver dados. Execute `migrations/015_auth_tenant.sql` **uma única vez** no Console do banco `agrovelyx-prod` após os Blocos 1-14. NÃO execute a migração duas vezes, pois o `ALTER TABLE ADD COLUMN` não é idempotente.
+2. Execute o arquivo privado `AGROVELYX_01_GRANJAS_PRIVADO.sql` no Console do D1. Esse arquivo fica **fora deste ZIP**.
+3. Execute `AGROVELYX_02_USUARIOS_PRIVADO.sql` no mesmo Console. Esse arquivo fica **fora deste ZIP**. Não envie esses arquivos para o GitHub.
+4. Acesse Cloudflare D1 > `agrovelyx-prod`, copie o **Database ID** e substitua `SUBSTITUIR_PELO_DATABASE_ID_DO_D1` em `wrangler.jsonc`.
+5. Publique o Worker com assets e D1 binding `DB` usando `npx wrangler deploy`, ou configure o projeto conectado ao GitHub para executar esse comando de deploy (não só upload estático de Pages).
+6. Abra o endereço HTTPS do Worker e faça login. A tela inicial identifica o nome da granja.
+7. Troque imediatamente as senhas iniciais, especialmente a do DEMONSTRATIVO, pelo botão `Senha`.
+8. Em Cadastros e Administração > Usuários e permissões, crie acessos adicionais. Usuários comuns começam sem permissão de acesso aos registros e precisam de autorizações por módulo.
 
-1. API autenticada Cloudflare Workers, banco D1 com migrations e identificadores relacionais persistentes.
-2. Separação de dados por cliente/granja, login seguro, controles de acesso, LGPD e usuários reais para auditoria.
-3. Implementar sincronização bidirecional com idempotência, conflitos, retry, confirmações e persistência offline robusta (preferivelmente IndexedDB com fila transacional). **O botão `ENVIAR DADOS OFFLINE` só deverá aparecer quando o servidor estiver acessível e existirem pendências.** Ele não aparece nesta prévia para não simular um envio inexistente.
-4. Transações de estoque de ração/medicamentos e custos reais com validação de saldos, lotes, carências e rateios.
-5. Controles zootécnicos e índices tecnicamente validados, genealogia relacional, tempos de permanência automaticamente calculados, indicadores e regras de conferência.
-6. Testes de ponta a ponta, revisão de segurança, histórico imutável e backup automático em servidor.
+## Teste de isolamento obrigatório
 
-## Publicação no GitHub / Cloudflare
+- Entre com um dos logins da Lago Azul e grave um registro de teste. Saia.
+- Entre no login do Demonstrativo. O registro da Lago Azul não deverá aparecer.
+- Grave outro registro no Demonstrativo, saia e volte para Lago Azul. Os dados demonstrativos não deverão aparecer.
+- Confira `erp_records`: `SELECT f.name, r.record_type, COUNT(*) AS registros FROM erp_records r JOIN farms f ON f.id=r.farm_id GROUP BY f.name,r.record_type;`
 
-Substitua os arquivos do repositório pelos arquivos deste ZIP (preservando `public/` no nível da raiz). Cloudflare Pages: **Framework preset None**, comando de build em branco, diretório de saída `public`. O arquivo `wrangler.jsonc` existente continua voltado a assets estáticos.
+## Segurança
 
-No celular, abra via HTTPS depois de uma primeira visita online para permitir cache offline. Dados locais ficam **somente no navegador e dispositivo que os criou**; limpar dados do navegador pode apagá-los. Faça backup manual pelo menu `Gestão > Central de sincronização`.
+Não coloque senhas nem os scripts privados de seed dentro do repositório. Mantenha os scripts privados seguros e não reenvie por chat. Uma senha inicial curta pode ser cadastrada apenas para a primeira troca; depois é obrigatório usar senha longa, única e não compartilhada. Duas contas com a mesma senha continuam vulneráveis ao mesmo vazamento. Dados reais e dados fictícios não devem ser exportados juntos.

@@ -7,3 +7,13 @@
 @media(max-width:800px){.side-product{margin:15px 4px}.sidebar{width:min(315px,85vw)}.facility-grid,.info-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.topbar{height:65px}.topbar .profile{font-size:0}.topbar .avatar{font-size:12px}.editor-modal{max-height:96dvh}.modal-footer{padding:12px}.modal-footer button{font-size:12px}.form-grid{padding:13px}}
 @media(max-width:510px){.form-grid,.config-grid,.facility-grid,.info-grid,.shortcut-options{grid-template-columns:1fr}.modal-help{padding:10px 14px}.editor-modal .modal-head{padding:12px 15px}.editor-modal h2{font-size:17px}.modal-footer button{flex:1 1 100%}.draft-status{flex:1 1 100%}.action-tools{margin:12px 0}.panel{padding:14px}.content{padding:12px}.hero{padding:21px}.topbar .crumb{font-size:10px}.nav-group{padding:12px}.nav-sub button{padding:10px}.shortcut-tile{min-height:60px}}
 @media print{.sidebar,.topbar,.footer,.action-tools,.action-row,.panel-toolbar,.modal-overlay,button{display:none!important}.content{max-width:none!important}.main-area{width:100%!important}.pia-detail{break-inside:avoid}.pia-detail-body{display:block!important}}
+/* Login autenticado e administração de usuários */
+#login-screen{position:fixed;inset:0;z-index:9999;display:grid;place-items:center;padding:20px;background:linear-gradient(145deg,#102743,#214963)}
+.login-card{width:min(420px,100%);background:#fff;border-radius:18px;padding:32px;box-shadow:0 20px 65px #0005;color:#1a3145}
+.login-card img{display:block;max-width:240px;max-height:125px;object-fit:contain;margin:0 auto 16px}
+.login-card h2{text-align:center;margin:0 0 8px}.login-card p{text-align:center;line-height:1.5;color:#516577}
+.login-card form{display:grid;gap:18px;margin-top:22px}.login-card label{display:grid;gap:6px;font-weight:600}
+.login-card input{box-sizing:border-box;width:100%;padding:12px;border:1px solid #b9cbd5;border-radius:9px;font-size:16px;color:#19344b;background:white}
+.login-card button{width:100%;min-height:44px}.login-card .login-error{color:#b12525;min-height:1.5em}
+#logout-user{margin-left:10px;padding:6px 12px;font-size:12px}
+@media(max-width:700px){.login-card{padding:22px}.top-right .status{max-width:100px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}}
